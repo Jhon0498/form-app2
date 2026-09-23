@@ -2,5 +2,8 @@ Flask
 Flask-Bootstrap
 Flask-WTF
 Flask-Moment
+Flask-SQLAlchemy
+Flask-Migrate
+python-dotenv
 email-validator
 requests

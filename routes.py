@@ -3,6 +3,7 @@ from datetime import datetime
 from forms import FormularioAluno
 import requests
 
+
 def registrar_rotas(app):
 
     # Usuários cadastrados temporariamente
@@ -13,17 +14,17 @@ def registrar_rotas(app):
         }
     }
 
+    # Rota principal
     @app.route('/', methods=['GET', 'POST'])
     def index():
 
         # Cria o formulário
         form = FormularioAluno()
 
-        # Se o usuário clicou em Submit
-        # E o campo foi preenchido corretamente
+        # Verifica se o formulário foi enviado
         if form.validate_on_submit():
 
-            # Pega o usuário informado no formulário
+            # Pega o usuário digitado
             usuario = form.usuario.data.strip().lower()
 
             # Procura o usuário cadastrado
@@ -32,69 +33,100 @@ def registrar_rotas(app):
             # Verifica se o usuário existe
             if dados_usuario:
 
-                # Pega o prontuário do usuário cadastrado
+                # Pega os dados do usuário
                 prontuario = dados_usuario['prontuario']
-
-                # Pega o nome do usuário cadastrado
                 nome = dados_usuario['nome']
 
-                # Pega o e-mail que receberá a mensagem
-                destinatario = app.config['FLASKY_ADMIN'].split(',')
+                # Pega o e-mail do administrador
+                flasky_admin = app.config.get(
+                    'FLASKY_ADMIN',
+                    ''
+                )
+
+                # Cria a lista de destinatários
+                destinatarios = [
+                    email.strip()
+                    for email in flasky_admin.split(',')
+                    if email.strip()
+                ]
 
                 # Pega a chave do Mailgun
-                mailgun_api_key = app.config['MAILGUN_API_KEY']
+                mailgun_api_key = app.config.get(
+                    'MAILGUN_API_KEY'
+                )
 
                 # Pega o domínio do Mailgun
-                mailgun_domain = app.config['MAILGUN_DOMAIN']
+                mailgun_domain = app.config.get(
+                    'MAILGUN_DOMAIN'
+                )
 
                 # Pega a URL base do Mailgun
-                mailgun_base_url = app.config['MAILGUN_BASE_URL']
+                mailgun_base_url = app.config.get(
+                    'MAILGUN_BASE_URL'
+                )
 
-                # Verifica se as configurações existem
+                # Verifica se a chave foi configurada
                 if not mailgun_api_key:
-                    return 'ERRO: MAILGUN_API_KEY não configurada.'
+                    return (
+                        'ERRO: MAILGUN_API_KEY '
+                        'não configurada.'
+                    )
 
+                # Verifica se o domínio foi configurado
                 if not mailgun_domain:
-                    return 'ERRO: MAILGUN_DOMAIN não configurada.'
+                    return (
+                        'ERRO: MAILGUN_DOMAIN '
+                        'não configurada.'
+                    )
 
-                if not destinatario:
-                    return 'ERRO: FLASKY_ADMIN não configurada.'
+                # Verifica se a URL foi configurada
+                if not mailgun_base_url:
+                    return (
+                        'ERRO: MAILGUN_BASE_URL '
+                        'não configurada.'
+                    )
 
-                # Monta o endereço da API do Mailgun
+                # Verifica se existe destinatário
+                if not destinatarios:
+                    return (
+                        'ERRO: FLASKY_ADMIN '
+                        'não configurada.'
+                    )
+
+                # Monta a URL para envio do e-mail
                 url = (
                     f'{mailgun_base_url}/v3/'
                     f'{mailgun_domain}/messages'
                 )
 
-                # E-mail utilizado como remetente
+                # Define o remetente
                 remetente = (
-                    f'Formulário Flask '
+                    'Formulário Flask '
                     f'<postmaster@{mailgun_domain}>'
                 )
 
-                # Assunto do e-mail
+                # Define o assunto
                 assunto = 'Novo cadastro realizado'
 
-                # Conteúdo do e-mail
-                mensagem = f
-Novo cadastro realizado!
-
-Prontuário: {prontuario}
-Nome: {nome}
-Usuário: {usuario}
-
+                # Monta a mensagem
+                mensagem = (
+                    'Novo cadastro realizado!\n\n'
+                    f'Prontuário: {prontuario}\n'
+                    f'Nome: {nome}\n'
+                    f'Usuário: {usuario}'
+                )
 
                 # Dados enviados para o Mailgun
                 dados = {
                     'from': remetente,
-                    'to': destinatario,
+                    'to': destinatarios,
                     'subject': assunto,
                     'text': mensagem
                 }
 
                 try:
 
-                    # Envia o e-mail através do Mailgun
+                    # Envia o e-mail
                     resposta = requests.post(
                         url,
                         auth=('api', mailgun_api_key),
@@ -102,54 +134,58 @@ Usuário: {usuario}
                         timeout=30
                     )
 
-                    # Verifica se o Mailgun aceitou o envio
+                    # Verifica se o envio funcionou
                     if resposta.status_code == 200:
 
                         return render_template(
                             'index.html',
                             form=form,
                             nome=nome,
-                            mensagem='E-mail enviado com sucesso!',
+                            mensagem=(
+                                'E-mail enviado '
+                                'com sucesso!'
+                            ),
                             current_time=datetime.utcnow()
                         )
 
+                    # Caso o Mailgun retorne erro
                     else:
 
-                        # Mostra o erro retornado pelo Mailgun
-                        return f
-                        <h2>Erro ao enviar o e-mail</h2>
+                        erro_mailgun = (
+                            '<h2>Erro ao enviar o e-mail</h2>'
+                            '<p>Código do Mailgun: '
+                            f'{resposta.status_code}</p>'
+                            '<p>Resposta:</p>'
+                            f'<pre>{resposta.text}</pre>'
+                        )
 
-                        <p>
-                            Código do Mailgun:
-                            {resposta.status_code}
-                        </p>
+                        return erro_mailgun
 
-                        <p>Resposta:</p>
-
-                        <pre>{resposta.text}</pre>
-
-
+                # Caso ocorra erro de conexão
                 except requests.exceptions.RequestException as erro:
 
-                    # Mostra erro de conexão
-                    return f
-                    <h2>Erro ao conectar com o Mailgun</h2>
+                    erro_conexao = (
+                        '<h2>Erro ao conectar '
+                        'com o Mailgun</h2>'
+                        f'<p>{erro}</p>'
+                    )
 
-                    <p>{erro}</p>
+                    return erro_conexao
 
-
+            # Caso o usuário não seja encontrado
             else:
 
-                # Usuário não encontrado
                 return render_template(
                     'index.html',
                     form=form,
-                    erro=f'O usuário "{usuario}" não foi encontrado.',
+                    erro=(
+                        f'O usuário "{usuario}" '
+                        'não foi encontrado.'
+                    ),
                     current_time=datetime.utcnow()
                 )
 
-        # Quando a pessoa entra pela primeira vez,
-        # ainda não existe nenhum dado preenchido
+        # Carrega a página inicialmente
         return render_template(
             'index.html',
             form=form,
