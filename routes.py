@@ -1,7 +1,7 @@
-from flask import render_template
+from flask import render_template, request
 from datetime import datetime
 from forms import FormularioAluno
-from models import User
+from models import User, Role
 from app import db
 import requests
 
@@ -16,28 +16,54 @@ def registrar_rotas(app):
         # Cria uma instância do formulário
         form = FormularioAluno()
 
+        # Diagnóstico temporário
+        print('MÉTODO:', request.method)
+        print('DADOS:', request.form)
+
         # Busca todos os usuários cadastrados no banco
         usuarios_banco = User.query.all()
 
-        # Verifica se o formulário foi enviado corretamente
-        if form.validate_on_submit():
+        # Verifica se o formulário foi enviado
+        if request.method == 'POST':
 
-            # Pega o nome digitado no formulário
-            nome = form.usuario.data.strip()
+            # Pega os dados digitados no formulário
+            username = (
+                form.usuario.data.strip()
+                if form.usuario.data
+                else ''
+            )
 
-            # Pega o prontuário digitado no formulário
-            prontuario = form.prontuario.data.strip()
+            nome = (
+                form.nome.data.strip()
+                if form.nome.data
+                else ''
+            )
+
+            prontuario = (
+                form.prontuario.data.strip()
+                if form.prontuario.data
+                else ''
+            )
+
+            # Verifica se os campos foram preenchidos
+            if not username or not nome or not prontuario:
+
+                return render_template(
+                    'index.html',
+                    form=form,
+                    nome=nome,
+                    mensagem='Preencha todos os campos.',
+                    users=usuarios_banco,
+                    current_time=datetime.utcnow()
+                )
 
             # Verifica se o checkbox foi marcado
             enviar_email = form.enviar_email.data
 
-            # Cria um username a partir do nome
-            username = nome.lower().replace(' ', '')
-
             # Verifica se o usuário já existe
             usuario_existente = User.query.filter(
                 (User.username.ilike(username)) |
-                (User.name.ilike(nome))
+                (User.prontuario.ilike(prontuario))
             ).first()
 
             # Se o usuário já existir
@@ -47,23 +73,57 @@ def registrar_rotas(app):
                     'index.html',
                     form=form,
                     nome=usuario_existente.name,
-                    mensagem='Este usuário já está cadastrado.',
+                    mensagem='Este usuário ou prontuário já está cadastrado.',
                     users=usuarios_banco,
                     current_time=datetime.utcnow()
                 )
 
-            # Cria um novo usuário
+            # Busca a função User
+            funcao_user = Role.query.filter_by(
+                name='User'
+            ).first()
+
+            # Cria um novo usuário com a função User
             novo_usuario = User(
                 username=username,
                 name=nome,
-                prontuario=prontuario
+                prontuario=prontuario,
+                role=funcao_user
             )
 
-            # Adiciona o usuário à sessão do banco
-            db.session.add(novo_usuario)
+            try:
 
-            # Salva o usuário no banco de dados
-            db.session.commit()
+                # Adiciona o usuário à sessão do banco
+                db.session.add(novo_usuario)
+
+                # Salva o usuário no banco de dados
+                db.session.commit()
+
+                # Diagnóstico temporário
+                print(
+                    'USUÁRIO SALVO:',
+                    novo_usuario.id,
+                    novo_usuario.username,
+                    novo_usuario.name,
+                    novo_usuario.prontuario
+                )
+
+            except Exception as erro:
+
+                # Desfaz a operação caso ocorra algum erro
+                db.session.rollback()
+
+                # Mostra o erro no log
+                print('ERRO AO SALVAR USUÁRIO:', erro)
+
+                return render_template(
+                    'index.html',
+                    form=form,
+                    nome=nome,
+                    mensagem='Erro ao cadastrar o usuário.',
+                    users=usuarios_banco,
+                    current_time=datetime.utcnow()
+                )
 
             # Atualiza a relação de usuários
             usuarios_banco = User.query.all()
@@ -130,9 +190,9 @@ def registrar_rotas(app):
                 f'{mailgun_domain}/messages'
             )
 
-            # Define o remetente
+                      # Define o remetente
             remetente = (
-                'Formulário Flask '
+                'Cadastro de Alunos '
                 f'<postmaster@{mailgun_domain}>'
             )
 
@@ -142,9 +202,9 @@ def registrar_rotas(app):
             # Monta o conteúdo do e-mail
             mensagem_email = (
                 'Novo cadastro realizado!\n\n'
-                f'Prontuário: {prontuario}\n'
-                f'Nome: {nome}\n'
-                f'Usuário: {username}'
+                f'Usuário: {username}\n'
+                f'Nome do aluno: {nome}\n'
+                f'Prontuário: {prontuario}'
             )
 
             # Dados enviados para o Mailgun
@@ -179,6 +239,7 @@ def registrar_rotas(app):
 
                 else:
 
+                    # Mostra o erro retornado pelo Mailgun
                     erro_mailgun = (
                         '<h2>Erro ao enviar o e-mail</h2>'
                         '<p>Código do Mailgun: '
@@ -191,6 +252,7 @@ def registrar_rotas(app):
 
             except requests.exceptions.RequestException as erro:
 
+                # Trata erros de conexão com o Mailgun
                 erro_conexao = (
                     '<h2>Erro ao conectar com o Mailgun</h2>'
                     f'<p>{erro}</p>'
