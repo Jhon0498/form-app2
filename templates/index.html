@@ -15,7 +15,7 @@
 
     <p>Prazer em conhecê-lo!</p>
 
-    <!-- Texto exibido após a ação -->
+    <!-- Mensagem -->
     {% if mensagem %}
         <p>{{ mensagem }}</p>
     {% endif %}
@@ -28,12 +28,15 @@
         <!-- Proteção CSRF -->
         {{ form.hidden_tag() }}
 
-        <!-- Campo de texto -->
+        <!-- Campo de usuário -->
         <div class="form-group">
 
             {{ form.usuario.label(class="form-label") }}
 
-            {{ form.usuario(class="form-control", placeholder="Digite seu nome") }}
+            {{ form.usuario(
+                class="form-control",
+                placeholder="Digite seu nome"
+            ) }}
 
             {% for error in form.usuario.errors %}
                 <span class="text-danger">
@@ -47,10 +50,12 @@
 
         <!-- Checkbox -->
         <div class="form-group">
+
             <label>
                 {{ form.enviar_email() }}
                 {{ form.enviar_email.label.text }}
             </label>
+
         </div>
 
         <br>
@@ -60,8 +65,10 @@
 
     </form>
 
+    <!-- Erro -->
     {% if erro %}
         <br>
+
         <div class="alert alert-danger">
             {{ erro }}
         </div>
@@ -73,17 +80,24 @@
     <h2>Relação de usuários cadastrados</h2>
 
     <table class="table">
+
         <thead>
             <tr>
-                <th>Nome do usuário</th>
+                <th>Usuário</th>
                 <th>Função</th>
             </tr>
         </thead>
 
         <tbody>
+
             {% for user in users %}
+
                 <tr>
-                    <td>{{ user.username }}</td>
+
+                    <td>
+                        {{ user.username }}
+                    </td>
+
                     <td>
                         {% if user.role %}
                             {{ user.role.name }}
@@ -91,13 +105,21 @@
                             Sem função
                         {% endif %}
                     </td>
+
                 </tr>
+
             {% else %}
+
                 <tr>
-                    <td colspan="2">Nenhum usuário cadastrado.</td>
+                    <td colspan="2">
+                        Nenhum usuário cadastrado.
+                    </td>
                 </tr>
+
             {% endfor %}
+
         </tbody>
+
     </table>
 
 </div>

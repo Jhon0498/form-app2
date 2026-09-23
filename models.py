@@ -61,7 +61,7 @@ class User(db.Model):
     prontuario = db.Column(
         db.String(64),
         unique=True,
-        nullable=False
+        nullable=True
     )
 
     # Liga o usuário à tabela de funções

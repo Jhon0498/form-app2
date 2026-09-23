@@ -67,10 +67,6 @@ bootstrap = Bootstrap(app)
 moment = Moment(app)
 
 
-# Importa os modelos
-from models import Role, User
-
-
 # Importa e registra as rotas
 from routes import registrar_rotas
 
