@@ -1,14 +1,26 @@
 {% extends "base.html" %}
 
-{% block title %}Formulário{% endblock %}
+{% block title %}Flasky{% endblock %}
 
 {% block page_content %}
 
 <div class="container">
 
-    <h1>Olá, Stranger!</h1>
+    <!-- Saudação -->
+    {% if nome %}
+        <h1>Olá, {{ nome }}!</h1>
+    {% else %}
+        <h1>Olá, Stranger!</h1>
+    {% endif %}
 
     <p>Prazer em conhecê-lo!</p>
+
+    <!-- Texto exibido após a ação -->
+    {% if mensagem %}
+        <p>{{ mensagem }}</p>
+    {% endif %}
+
+    <hr>
 
     <!-- Formulário -->
     <form method="POST">
@@ -16,59 +28,77 @@
         <!-- Proteção CSRF -->
         {{ form.hidden_tag() }}
 
-        <!-- Usuário -->
+        <!-- Campo de texto -->
         <div class="form-group">
 
-            {{ form.usuario.label }}
+            {{ form.usuario.label(class="form-label") }}
 
-            {{ form.usuario(class="form-control") }}
+            {{ form.usuario(class="form-control", placeholder="Digite seu nome") }}
 
             {% for error in form.usuario.errors %}
-
                 <span class="text-danger">
                     {{ error }}
                 </span>
-
             {% endfor %}
 
         </div>
 
         <br>
 
+        <!-- Checkbox -->
+        <div class="form-group">
+            <label>
+                {{ form.enviar_email() }}
+                {{ form.enviar_email.label.text }}
+            </label>
+        </div>
+
+        <br>
+
         <!-- Botão -->
-        {{ form.submit(class="btn btn-primary") }}
+        {{ form.submit(class="btn btn-default") }}
 
     </form>
 
-    {% if nome %}
-
-        <br>
-
-        <div class="alert alert-success">
-
-            <strong>Cadastro realizado com sucesso!</strong>
-
-            <p>Nome: {{ nome }}</p>
-
-            {% if mensagem %}
-                <p>{{ mensagem }}</p>
-            {% endif %}
-
-        </div>
-
-    {% endif %}
-
     {% if erro %}
-
         <br>
-
         <div class="alert alert-danger">
-
             {{ erro }}
-
         </div>
-
     {% endif %}
+
+    <hr>
+
+    <!-- Relação de usuários -->
+    <h2>Relação de usuários cadastrados</h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome do usuário</th>
+                <th>Função</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>
+                        {% if user.role %}
+                            {{ user.role.name }}
+                        {% else %}
+                            Sem função
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="2">Nenhum usuário cadastrado.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 </div>
 
