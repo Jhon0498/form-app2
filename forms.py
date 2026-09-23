@@ -2,18 +2,27 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
 from wtforms.validators import DataRequired
 
+
 class FormularioAluno(FlaskForm):
 
-    # Usuário
+    # Nome do usuário
     usuario = StringField(
         'Qual é o seu nome?:',
         validators=[DataRequired()]
     )
+
+    # Prontuário do usuário
+    prontuario = StringField(
+        'Qual é o seu prontuário?:',
+        validators=[DataRequired()]
+    )
+
     # Checkbox para escolher se deseja enviar e-mail
     enviar_email = BooleanField(
         'Deseja enviar e-mail para flaskaulasweb@zohomail.com?'
-)
-    # botão que envia o formulário
+    )
+
+    # Botão que envia o formulário
     submit = SubmitField('Submit')
 
 
