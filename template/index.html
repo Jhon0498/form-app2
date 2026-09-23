@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Formulário{% endblock %}
+
+{% block page_content %}
+
+<div class="container">
+
+    <h1>Hello, Stranger!</h1>
+
+    <p>Pleased to meet you!</p>
+
+    <!-- Formulário -->
+    <form method="POST">
+
+        <!-- Proteção CSRF -->
+        {{ form.hidden_tag() }}
+
+        <!-- Usuário -->
+        <div class="form-group">
+
+            {{ form.usuario.label }}
+
+            {{ form.usuario(class="form-control") }}
+
+            {% for error in form.usuario.errors %}
+
+                <span class="text-danger">
+                    {{ error }}
+                </span>
+
+            {% endfor %}
+
+        </div>
+
+        <br>
+
+        <!-- Botão -->
+        {{ form.submit(class="btn btn-primary") }}
+
+    </form>
+
+    {% if nome %}
+
+        <br>
+
+        <div class="alert alert-success">
+
+            <strong>Cadastro realizado com sucesso!</strong>
+
+            <p>Nome: {{ nome }}</p>
+
+            {% if mensagem %}
+                <p>{{ mensagem }}</p>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+    {% if erro %}
+
+        <br>
+
+        <div class="alert alert-danger">
+
+            {{ erro }}
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
