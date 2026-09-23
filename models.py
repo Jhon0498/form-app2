@@ -1,7 +1,6 @@
 from app import db
 
 
-# Modelo da tabela de funções
 class Role(db.Model):
 
     # Nome da tabela no banco
@@ -14,7 +13,6 @@ class Role(db.Model):
     )
 
     # Nome da função
-    # Exemplo: Administrator ou User
     name = db.Column(
         db.String(64),
         unique=True,
@@ -23,19 +21,17 @@ class Role(db.Model):
     )
 
     # Relacionamento entre Role e User
-    # Uma função pode possuir vários usuários
     users = db.relationship(
         'User',
         backref='role',
         lazy='dynamic'
     )
 
-    # Forma como o objeto será mostrado no terminal
+    # Representação do objeto
     def __repr__(self):
         return f'<Role {self.name}>'
 
 
-# Modelo da tabela de usuários
 class User(db.Model):
 
     # Nome da tabela no banco
@@ -47,7 +43,7 @@ class User(db.Model):
         primary_key=True
     )
 
-    # Nome do usuário
+    # Nome de usuário usado no formulário
     username = db.Column(
         db.String(64),
         unique=True,
@@ -55,12 +51,25 @@ class User(db.Model):
         nullable=False
     )
 
-    # Chave estrangeira que liga o usuário à função
+    # Nome completo do usuário
+    name = db.Column(
+        db.String(128),
+        nullable=False
+    )
+
+    # Número do prontuário
+    prontuario = db.Column(
+        db.String(64),
+        unique=True,
+        nullable=False
+    )
+
+    # Liga o usuário à tabela de funções
     role_id = db.Column(
         db.Integer,
         db.ForeignKey('roles.id')
     )
 
-    # Forma como o objeto será mostrado no terminal
+    # Representação do objeto
     def __repr__(self):
         return f'<User {self.username}>'
