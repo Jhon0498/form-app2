@@ -26,33 +26,21 @@ def registrar_rotas(app):
         # Verifica se o formulário foi enviado
         if request.method == 'POST':
 
-            # Pega os dados digitados no formulário
-            username = (
+            # Pega o nome digitado no formulário
+            nome = (
                 form.usuario.data.strip()
                 if form.usuario.data
                 else ''
             )
 
-            nome = (
-                form.nome.data.strip()
-                if form.nome.data
-                else ''
-            )
-
-            prontuario = (
-                form.prontuario.data.strip()
-                if form.prontuario.data
-                else ''
-            )
-
-            # Verifica se os campos foram preenchidos
-            if not username or not nome or not prontuario:
+            # Verifica se o nome foi preenchido
+            if not nome:
 
                 return render_template(
                     'index.html',
                     form=form,
-                    nome=nome,
-                    mensagem='Preencha todos os campos.',
+                    nome='',
+                    mensagem='Digite um nome para cadastrar.',
                     users=usuarios_banco,
                     current_time=datetime.utcnow()
                 )
@@ -60,10 +48,12 @@ def registrar_rotas(app):
             # Verifica se o checkbox foi marcado
             enviar_email = form.enviar_email.data
 
+            # Cria um username a partir do nome
+            username = nome.lower().replace(' ', '')
+
             # Verifica se o usuário já existe
             usuario_existente = User.query.filter(
-                (User.username.ilike(username)) |
-                (User.prontuario.ilike(prontuario))
+                User.username.ilike(username)
             ).first()
 
             # Se o usuário já existir
@@ -73,7 +63,7 @@ def registrar_rotas(app):
                     'index.html',
                     form=form,
                     nome=usuario_existente.name,
-                    mensagem='Este usuário ou prontuário já está cadastrado.',
+                    mensagem='Este usuário já está cadastrado.',
                     users=usuarios_banco,
                     current_time=datetime.utcnow()
                 )
@@ -87,7 +77,6 @@ def registrar_rotas(app):
             novo_usuario = User(
                 username=username,
                 name=nome,
-                prontuario=prontuario,
                 role=funcao_user
             )
 
@@ -104,8 +93,7 @@ def registrar_rotas(app):
                     'USUÁRIO SALVO:',
                     novo_usuario.id,
                     novo_usuario.username,
-                    novo_usuario.name,
-                    novo_usuario.prontuario
+                    novo_usuario.name
                 )
 
             except Exception as erro:
@@ -190,7 +178,7 @@ def registrar_rotas(app):
                 f'{mailgun_domain}/messages'
             )
 
-                      # Define o remetente
+            # Define o remetente
             remetente = (
                 'Cadastro de Alunos '
                 f'<postmaster@{mailgun_domain}>'
@@ -204,7 +192,7 @@ def registrar_rotas(app):
                 'Novo cadastro realizado!\n\n'
                 f'Usuário: {username}\n'
                 f'Nome do aluno: {nome}\n'
-                f'Prontuário: {prontuario}'
+                'Prontuário: PT3026931'
             )
 
             # Dados enviados para o Mailgun
