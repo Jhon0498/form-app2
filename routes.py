@@ -1,7 +1,7 @@
 from flask import render_template, request
 from datetime import datetime
 from forms import FormularioAluno
-from models import User, Role
+from models import User, Role, EmailEnviado
 from app import db
 import requests
 
@@ -216,6 +216,42 @@ def registrar_rotas(app):
                 # Verifica se o Mailgun aceitou o envio
                 if resposta.status_code == 200:
 
+                    # Cria o registro do e-mail enviado
+                    novo_email = EmailEnviado(
+                        username=username,
+                        nome=nome,
+                        prontuario='PT3026931',
+                        destinatario=', '.join(destinatarios),
+                        assunto=assunto,
+                        status='Enviado'
+                    )
+
+                    try:
+
+                        # Adiciona o e-mail enviado ao banco
+                        db.session.add(novo_email)
+
+                        # Salva o registro no banco
+                        db.session.commit()
+
+                        # Diagnóstico temporário
+                        print(
+                            'E-MAIL SALVO:',
+                            novo_email.id,
+                            novo_email.destinatario
+                        )
+
+                    except Exception as erro:
+
+                        # Desfaz a operação caso ocorra algum erro
+                        db.session.rollback()
+
+                        # Mostra o erro no log
+                        print(
+                            'ERRO AO SALVAR E-MAIL:',
+                            erro
+                        )
+
                     return render_template(
                         'index.html',
                         form=form,
@@ -255,3 +291,19 @@ def registrar_rotas(app):
             users=usuarios_banco,
             current_time=datetime.utcnow()
         )
+
+
+    # Rota para visualizar os e-mails enviados
+    @app.route('/emails-enviados')
+    def emails_enviados():
+
+        # Busca todos os e-mails enviados
+        emails = EmailEnviado.query.order_by(
+            EmailEnviado.data_envio.desc()
+        ).all()
+
+        # Exibe a página de e-mails enviados
+        return render_template(
+            'emails_enviados.html',
+            emails=emails
+)

@@ -2,21 +2,22 @@
 {% extends "bootstrap/base.html" %}
 
 
-{# Título da página #}
+{# Define o título da página #}
 {% block title %}
     Flasky
 {% endblock %}
 
 
-{# Configurações do head #}
+{# Configurações do cabeçalho da página #}
 {% block head %}
 
+    {# Mantém as configurações originais do Bootstrap #}
     {{ super() }}
 
-    {# Ativa o Flask-Moment #}
+    {# Ativa o Flask-Moment para trabalhar com datas #}
     {{ moment.include_moment() }}
 
-    {# Ícone da página #}
+    {# Define o ícone que aparece na aba do navegador #}
     <link
         rel="icon"
         type="image/x-icon"
@@ -26,6 +27,7 @@
     {# Estilo da caixa de login #}
     <style>
 
+        /* Define o tamanho e o espaçamento da caixa de login */
         .login-container {
             width: 300px;
             margin: 20px auto;
@@ -39,46 +41,61 @@
 {% endblock %}
 
 
-{# Barra de navegação #}
+{# Barra de navegação do sistema #}
 {% block navbar %}
 
 <div class="navbar navbar-inverse" role="navigation">
 
     <div class="container">
 
+        {# Área do nome do sistema e botão do menu #}
         <div class="navbar-header">
 
-            {# Botão do menu para telas menores #}
+            {# Botão que aparece em telas menores #}
             <button
                 type="button"
                 class="navbar-toggle"
                 data-toggle="collapse"
                 data-target=".navbar-collapse"
             >
+
+                {# Texto usado por leitores de tela #}
                 <span class="sr-only">Toggle navigation</span>
 
+                {# Linhas que formam o botão do menu #}
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
+
             </button>
 
 
-            {# Nome do site #}
+            {# Nome do sistema que aparece na barra de navegação #}
             <a class="navbar-brand" href="/">
-               Avaliação contínua: Aula 070
+                Avaliação contínua: Aula 070
             </a>
 
         </div>
 
 
-        {# Links do menu #}
+        {# Área dos links do menu #}
         <div class="navbar-collapse collapse">
 
+            {# Lista dos itens da barra de navegação #}
             <ul class="nav navbar-nav">
 
-                {# Página inicial #}
+                {# Link para a página inicial #}
                 <li>
-                    <a href="/">Home</a>
+                    <a href="/">
+                        Home
+                    </a>
+                </li>
+
+                {# Link para a página de e-mails enviados #}
+                <li>
+                    <a href="{{ url_for('emails_enviados') }}">
+                        E-mails Enviados
+                    </a>
                 </li>
 
             </ul>
@@ -92,14 +109,15 @@
 {% endblock %}
 
 
-{# Conteúdo da página #}
+{# Área de conteúdo das páginas #}
 {% block content %}
 
 <div class="container">
 
-    {# Mostra as mensagens do Flask #}
+    {# Busca as mensagens enviadas pelo Flask #}
     {% for message in get_flashed_messages() %}
 
+        {# Caixa que apresenta a mensagem ao usuário #}
         <div class="alert alert-warning">
 
             {# Botão para fechar a mensagem #}
@@ -111,6 +129,7 @@
                 &times;
             </button>
 
+            {# Exibe o conteúdo da mensagem #}
             {{ message }}
 
         </div>
@@ -118,7 +137,7 @@
     {% endfor %}
 
 
-    {# Conteúdo específico de cada página #}
+    {# Área onde cada página coloca seu próprio conteúdo #}
     {% block page_content %}
     {% endblock %}
 

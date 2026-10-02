@@ -14,7 +14,8 @@ class FormularioAluno(FlaskForm):
     # Prontuário do usuário
     prontuario = StringField(
         'Qual é o seu prontuário?:',
-        validators=[DataRequired()]
+        validators=[DataRequired()],
+        default='PT3026931'
     )
 
     # Checkbox para escolher se deseja enviar e-mail
@@ -28,6 +29,7 @@ class FormularioAluno(FlaskForm):
 
 class LoginForm(FlaskForm):
 
+    # Campo de usuário
     usuario = StringField(
         validators=[DataRequired()],
         render_kw={
@@ -35,6 +37,7 @@ class LoginForm(FlaskForm):
         }
     )
 
+    # Campo de senha
     senha = PasswordField(
         'Informe a sua senha',
         validators=[DataRequired()],
@@ -43,4 +46,5 @@ class LoginForm(FlaskForm):
         }
     )
 
+    # Botão de envio
     submit = SubmitField('Enviar')

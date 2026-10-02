@@ -1,0 +1,118 @@
+<!-- Estende o template principal da aplicação -->
+{% extends "base.html" %}
+
+<!-- Define o título da página -->
+{% block title %}E-mails Enviados{% endblock %}
+
+<!-- Inicia o conteúdo principal da página -->
+{% block page_content %}
+
+<!-- Container que organiza o conteúdo -->
+<div class="container">
+
+    <!-- Título da página -->
+    <h2>E-mails Enviados</h2>
+
+    <!-- Espaçamento -->
+    <br>
+
+    <!-- Verifica se existem e-mails enviados -->
+    {% if emails %}
+
+    <!-- Cria a tabela de e-mails -->
+    <table class="table table-bordered table-striped">
+
+        <!-- Cabeçalho da tabela -->
+        <thead>
+            <tr>
+
+                <!-- Coluna da data -->
+                <th>Data</th>
+
+                <!-- Coluna do usuário -->
+                <th>Usuário</th>
+
+                <!-- Coluna do nome -->
+                <th>Nome</th>
+
+                <!-- Coluna do prontuário -->
+                <th>Prontuário</th>
+
+                <!-- Coluna do destinatário -->
+                <th>Destinatário</th>
+
+                <!-- Coluna do assunto -->
+                <th>Assunto</th>
+
+                <!-- Coluna do status -->
+                <th>Status</th>
+
+            </tr>
+        </thead>
+
+        <!-- Corpo da tabela -->
+        <tbody>
+
+            <!-- Percorre todos os e-mails enviados -->
+            {% for email in emails %}
+
+            <!-- Cria uma linha para cada e-mail -->
+            <tr>
+
+                <!-- Mostra a data e hora do envio -->
+                <td>
+                    {{ moment(email.data_envio).format('DD/MM/YYYY HH:mm') }}
+                </td>
+
+                <!-- Mostra o usuário -->
+                <td>
+                    {{ email.username }}
+                </td>
+
+                <!-- Mostra o nome -->
+                <td>
+                    {{ email.nome }}
+                </td>
+
+                <!-- Mostra o prontuário -->
+                <td>
+                    {{ email.prontuario }}
+                </td>
+
+                <!-- Mostra o destinatário -->
+                <td>
+                    {{ email.destinatario }}
+                </td>
+
+                <!-- Mostra o assunto -->
+                <td>
+                    {{ email.assunto }}
+                </td>
+
+                <!-- Mostra o status do envio -->
+                <td>
+                    {{ email.status }}
+                </td>
+
+            </tr>
+
+            <!-- Finaliza o loop dos e-mails -->
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <!-- Caso não existam e-mails enviados -->
+    {% else %}
+
+    <!-- Mensagem exibida quando a tabela está vazia -->
+    <p>Nenhum e-mail enviado ainda.</p>
+
+    <!-- Finaliza a condição -->
+    {% endif %}
+
+</div>
+
+<!-- Finaliza o conteúdo principal -->
+{% endblock %}
